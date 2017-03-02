@@ -15,13 +15,13 @@ RUN mv /etc/apache2/apache2.conf /etc/apache2/apache2.conf.dist
 COPY apache2.conf /etc/apache2/apache2.conf
 ##</apache2>##
 
-#RUN gpg --keyserver pgp.mit.edu --recv-keys 0B96609E270F565C13292B24C13C70B87267B52D 0A95E9A026542D53835E3F3A7DEC4E69FC9C83D7
+RUN gpg --keyserver pgp.mit.edu --recv-keys 0B96609E270F565C13292B24C13C70B87267B52D 0A95E9A026542D53835E3F3A7DEC4E69FC9C83D7
 
-#ENV GPG_KEYS 0B96609E270F565C13292B24C13C70B87267B52D 0A95E9A026542D53835E3F3A7DEC4E69FC9C83D7 0E604491
-#RUN set -xe \
-#  && for key in $GPG_KEYS; do \
-#    gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; \
-#  done
+ENV GPG_KEYS 0B96609E270F565C13292B24C13C70B87267B52D 0A95E9A026542D53835E3F3A7DEC4E69FC9C83D7 0E604491
+RUN set -xe \
+  && for key in $GPG_KEYS; do \
+    gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; \
+  done
 
 # compile openssl, otherwise --with-openssl won't work
 RUN CFLAGS="-fPIC" && OPENSSL_VERSION="1.0.2d" \
@@ -29,7 +29,7 @@ RUN CFLAGS="-fPIC" && OPENSSL_VERSION="1.0.2d" \
       && mkdir openssl \
       && curl -sL "https://www.openssl.org/source/openssl-$OPENSSL_VERSION.tar.gz" -o openssl.tar.gz \
       && curl -sL "https://www.openssl.org/source/openssl-$OPENSSL_VERSION.tar.gz.asc" -o openssl.tar.gz.asc \
- #     && gpg --verify openssl.tar.gz.asc \
+      && gpg --verify openssl.tar.gz.asc \
       && tar -xzf openssl.tar.gz -C openssl --strip-components=1 \
       && cd /tmp/openssl \
       && ./config shared && make && make install \
@@ -50,7 +50,7 @@ RUN set -x \
 	&& rm *.deb \
 	&& curl -SL "http://php.net/get/php-$PHP_VERSION.tar.bz2/from/this/mirror" -o php.tar.bz2 \
 	&& curl -SL "http://php.net/get/php-$PHP_VERSION.tar.bz2.asc/from/this/mirror" -o php.tar.bz2.asc \
-#	&& gpg --verify php.tar.bz2.asc \
+	&& gpg --verify php.tar.bz2.asc \
 	&& mkdir -p /usr/src/php \
 	&& tar -xf php.tar.bz2 -C /usr/src/php --strip-components=1 \
 	&& rm php.tar.bz2* \
@@ -72,14 +72,6 @@ RUN set -x \
 
 COPY docker-php-* /usr/local/bin/
 COPY apache2-foreground /usr/local/bin/
-
-WORKDIR /var/www/html
-
-EXPOSE 80
-CMD ["apache2-foreground"]
-
-########### custom ################
-#FROM php:5.6-apache
 
 RUN a2enmod rewrite
 
@@ -125,3 +117,5 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 WORKDIR /var/www/html
 
 EXPOSE 80
+
+CMD ["apache2-foreground"]
