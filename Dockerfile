@@ -86,14 +86,11 @@ RUN apt-get update && apt-get install -y git mysql-client zip \
 RUN pecl install -o -f xdebug-2.2.7 \
     && docker-php-ext-enable xdebug
 
-
-COPY drupal-*.ini /usr/local/etc/php/conf.d/
-
+COPY drupal-*.ini $PHP_INI_DIR/conf.d/
 
 RUN pear channel-update pear.php.net \
     && pear install PHP_Debug \
     && pear install PHP_CodeSniffer-1.3.0RC1
-
 
 ENV COMPOSER_HOME /root/composer
 ENV COMPOSER_VERSION master
